@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: 'iwindplus-cloud'
+    # 开发阶段先静态写死，生产可改 file_sd 或 consul_sd
+    static_configs:
+      - targets:
+          - '172.20.10.11:9000'   # gateway
+          - '172.20.10.11:9001'   # mgt
+          - '172.20.10.11:9002'   # auth
+          - '172.20.10.11:9003'   # log
+          - '172.20.10.11:9004'   # im
+          - '172.20.10.11:9005'   # monitor
+          - '172.20.10.11:9006'   # setup
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '.*:(\d+)'
+        target_label: __tmp_port
+      - source_labels: [__tmp_port]
+        replacement: 'localhost:${1}'
+        target_label: instance

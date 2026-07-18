@@ -1,0 +1,498 @@
+networks:
+  middle:
+    external:
+      name: iwindplus-middle
+services:
+  mariadb:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/mariadb:10.8.3
+    hostname: mariadb
+    container_name: mariadb
+    restart: always
+    privileged: true
+    environment:
+      MARIADB_ROOT_PASSWORD: "njX@D*4ETsm3"
+    ports:
+      - "3317:3317"
+    networks:
+      - middle
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+      - ~/usr/local/mysql/data:/var/lib/mysql
+      - ~/usr/local/mysql/log:/var/log/mysql
+  redis:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/redis:7.0.15
+    hostname: redis
+    container_name: redis
+    restart: always
+    privileged: true
+    ports:
+      - "6379:6379"
+    networks:
+      - middle
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ./redis/redis.conf:/etc/redis/redis.conf
+      - ~/usr/local/redis/data:/data
+      - ~/usr/local/redis/log:/logs
+    command: [ "redis-server", "/etc/redis/redis.conf" ]
+  rabbitmq:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/rabbitmq:3.10.5-management
+    hostname: rabbitmq
+    container_name: rabbitmq
+    restart: always
+    privileged: true
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - middle
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: "EDH@T7JjfWFQ"
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ~/usr/local/rabbitmq/data:/var/lib/rabbitmq/mnesia
+      - ~/usr/local/rabbitmq/log:/var/log/rabbitmq
+  rmqnamesrv:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/rocketmq:5.3.0
+    hostname: rmqnamesrv
+    container_name: rmqnamesrv
+    restart: always
+    privileged: true
+    ports:
+      - "9876:9876"
+    networks:
+      - middle
+    environment:
+      - MAX_HEAP_SIZE=256M
+      - HEAP_NEWSIZE=128M
+    command: sh mqnamesrv
+  rmqbroker:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/rocketmq:5.3.0
+    hostname: rmqbroker
+    container_name: rmqbroker
+    restart: always
+    privileged: true
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
+    networks:
+      - middle
+    depends_on:
+      - 'rmqnamesrv'
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ./rocketmq/mac/broker.conf:/home/rocketmq/broker.conf
+      - ./rocketmq/plain_acl.yml:/home/rocketmq/conf/plain_acl.yml
+      - ~/usr/local/rocketmq/data:/home/rocketmq/store
+      - ~/usr/local/rocketmq/log:/home/rocketmq/logs
+    environment:
+      - NAMESRV_ADDR=rmqnamesrv:9876
+      - JAVA_OPT_EXT=-Xms512m -Xmx512m -Xmn256m
+    command: sh mqbroker -c /home/rocketmq/broker.conf
+  rmqdashboard:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/rocketmq-dashboard:2.0.0
+    hostname: rocketmq-dashboard
+    container_name: rocketmq-dashboard
+    restart: always
+    privileged: true
+    ports:
+      - "7897:8080"
+    networks:
+      - middle
+    depends_on:
+      - 'rmqnamesrv'
+    environment:
+      JAVA_OPTS: >
+        -Xmx256M -Xms256M -Xmn128M
+        -Drocketmq.namesrv.addr=rmqnamesrv:9876
+        -Drocketmq.config.accessKey=admin
+        -Drocketmq.config.secretKey=admin
+        -Dcom.rocketmq.sendMessageWithVIPChannel=false
+  mongo:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/mongo:7.0.11
+    hostname: mongo
+    container_name: mongo
+    restart: always
+    privileged: true
+    ports:
+      - "27017:27017"
+    networks:
+      - middle
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: "mF@h5gyEVQGV"
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ./mongo/mongo.conf:/data/configdb/mongo.conf
+      - ~/usr/local/mongo/data:/data/db
+      - ~/usr/local/mongo/log:/data/log
+  nacos:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/nacos:3.1.0
+    hostname: nacos
+    container_name: nacos
+    restart: always
+    privileged: true
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
+      - "8849:8080"
+    networks:
+      - middle
+    depends_on:
+      - mariadb
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: false
+      NACOS_AUTH_TOKEN: k9X5+mh5nUq6Kj8qY2f0Dr3vRt5pLk9wGh1nUo6qJt8=
+      NACOS_AUTH_IDENTITY_KEY: 4faebc3d
+      NACOS_AUTH_IDENTITY_VALUE: 7c9a1b6f
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mariadb
+      MYSQL_SERVICE_PORT: 3317
+      MYSQL_SERVICE_DB_NAME: nacos
+      MYSQL_SERVICE_USER: root
+      MYSQL_SERVICE_PASSWORD: njX@D*4ETsm3
+      JVM_XMS: 256m
+      JVM_XMX: 256m
+      JVM_XMN: 128m
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ./nacos/application.properties:/home/nacos/conf/application.properties
+      - ~/usr/local/nacos/data:/home/nacos/data
+      - ~/usr/local/nacos/log:/home/nacos/logs
+  zookeeper:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/zookeeper:3.8.4
+    hostname: zookeeper
+    container_name: zookeeper
+    restart: always
+    privileged: true
+    ports:
+      - "2181:2181"
+    networks:
+      - middle
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: yes
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ~/usr/local/zookeeper/data:/bitnami/zookeeper/data
+      - ~/usr/local/zookeeper/log:/bitnami/zookeeper/logs
+  kafka:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/kafka:3.7.1
+    hostname: kafka
+    container_name: kafka
+    restart: always
+    privileged: true
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    networks:
+      - middle
+    environment:
+      # 允许使用kraft，即Kafka替代Zookeeper
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_NODE_ID=1
+      # kafka角色，做broker，也要做controller
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      # 定义kafka服务端socket监听端口（Docker内部的ip地址和端口）
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      # 定义外网访问地址（宿主机ip地址和端口）ip不能是0.0.0.0
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+      # 定义安全协议
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      # 集群地址
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      # 指定供外部使用的控制类请求信息
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # 设置broker最大内存，和初始内存
+      - KAFKA_HEAP_OPTS=-Xmx512M -Xms256M
+      # 使用Kafka时的集群id，集群内的Kafka都要用这个id做初始化，生成一个UUID即可(22byte)
+      - KAFKA_KRAFT_CLUSTER_ID=xYcCyHmJlIaLzLoBzVwIcP
+      # 允许使用PLAINTEXT监听器，默认false，不建议在生产环境使用
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      # 自动创建主题
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      # broker.id，必须唯一，且与KAFKA_CFG_NODE_ID一致
+      - KAFKA_BROKER_ID=1
+      - JAVA_OPTS=-Xmx512m -Xms512m
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ~/usr/local/kafka/data:/bitnami/kafka/data
+      - ~/usr/local/kafka/log:/bitnami/kafka/logs
+  sentinel-nacos:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/sentinel-dashboard:1.8.6-nacos
+    hostname: sentinel-nacos
+    container_name: sentinel-nacos
+    restart: always
+    privileged: true
+    environment:
+      - NACOS_SERVER_ADDR=127.0.0.1:8848
+      - NACOS_NAMESPACE=sentinel
+      - NACOS_GROUP_ID=SENTINEL_GROUP
+      - NACOS_USERNAME=nacos
+      - NACOS_PASSWORD=zjLGJX2gRNRT
+      - JAVA_OPTS=-Dserver.port=8880 -Djava.security.egd=file:/dev/./urandom -Dsentinel.dashboard.auth.username=sentinel -Dsentinel.dashboard.auth.password=HAxpE39VR3E3
+    ports:
+      - "8880:8880"
+    networks:
+      - middle
+    depends_on:
+      - nacos
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ~/usr/local/sentinel-nacos/log:/root/logs/csp
+  seata:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/seata:2.0.0
+    hostname: seata
+    container_name: seata
+    restart: always
+    privileged: true
+    ports:
+      - "7091:7091"
+      - "8091:8091"
+    networks:
+      - middle
+    depends_on:
+      - nacos
+    environment:
+      - LOGSTASH_SERVER_ADDR=127.0.0.1:4560
+      - AUTH_USERNAME=seata
+      - AUTH_PASSWORD=qEL%bvPz6@Y&
+      - NACOS_SERVER_ADDR=127.0.0.1:8848
+      - NACOS_NAMESPACE=seata
+      - NACOS_GROUP_ID=SEATA_GROUP
+      - NACOS_USERNAME=nacos
+      - NACOS_PASSWORD=zjLGJX2gRNRT
+      - NACOS_CLUSTER=default
+      - SEATA_PORT=8091
+      - JMX_OPTS=-Xmx128m -Xms128m -Xmn64m -Xss512k
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ./seata/application.yml:/seata-server/resources/application.yml
+      - ~/usr/local/seata/log:/root/logs/seata
+  elasticsearch:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/elasticsearch:8.15.0
+    hostname: elasticsearch
+    container_name: elasticsearch
+    restart: always
+    privileged: true
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - middle
+    environment:
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=zaq12wsx
+      - node.name=elasticsearch
+      - discovery.type=single-node
+      - cluster.name=es-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ~/usr/local/elasticsearch/data:/usr/share/elasticsearch/data
+      - ~/usr/local/elasticsearch/log:/usr/share/elasticsearch/logs
+  kibana:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/kibana:8.15.0
+    hostname: kibana
+    container_name: kibana
+    restart: always
+    privileged: true
+    ports:
+      - "5601:5601"
+    networks:
+      - middle
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=zaq12wsx
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+  logstash:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/logstash:8.15.0
+    hostname: logstash
+    container_name: logstash
+    restart: always
+    privileged: true
+    ports:
+      - "4560:4560"
+    networks:
+      - middle
+    environment:
+      - LS_JAVA_OPTS=-Xmx256m -Xms256m
+    entrypoint:
+      - logstash
+      - -f
+      - /usr/share/logstash/config/logstash.conf
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "3"
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ./logstash/mac/config:/usr/share/logstash/config
+  minio:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/minio:2024
+    hostname: minio
+    container_name: minio
+    restart: always
+    privileged: true
+    ports:
+      - '9010:9000'
+      - '9011:9001'
+    networks:
+      - middle
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: gqnbgjtsbnn>
+      MINIO_PROMETHEUS_AUTH_TYPE: public
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ~/usr/local/minio/data:/bitnami/minio/data
+  xxl-job-admin:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/xxl-job-admin:3.0.1
+    hostname: xxl-job-admin
+    container_name: xxl-job-admin
+    restart: always
+    privileged: true
+    ports:
+      - '9880:8080'
+    networks:
+      - middle
+    depends_on:
+      - mariadb
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mariadb:3317/xxl_job?Unicode=true&characterEncoding=UTF-8&useSSL=false"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "njX@D*4ETsm3"
+      XXL_JOB_ACCESSTOKEN: c61909bdde7b5cbeb27adeeff43ac55c
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ~/usr/local/xxl-job/log:/data/applogs/xxl-job
+  snail-job-server:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/snail-job:1.9.0
+    hostname: snail-job-server
+    container_name: snail-job-server
+    restart: always
+    privileged: true
+    ports:
+      - "7080:8080"
+      - "17888:17888"
+    networks:
+      - middle
+    depends_on:
+      - mariadb
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mariadb:3317/snail_job?Unicode=true&characterEncoding=UTF-8&useSSL=false"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "njX@D*4ETsm3"
+    volumes:
+      - ~/usr/local/snail-job/log:/snailjob/server/data/log
+  jaeger:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/jaeger:2.10.0
+    hostname: jaeger
+    container_name: jaeger
+    restart: always
+    privileged: true
+    networks:
+      - middle
+    depends_on:
+      - elasticsearch
+      - prometheus
+    ports:
+      - "16686:16686"
+      - "14250:14250"  # collector gRPC
+      - "14268:14268"
+    environment:
+      # ===== trace 存储 =====
+      SPAN_STORAGE_TYPE: elasticsearch
+      ES_SERVER_URLS: http://elasticsearch:9200
+      ES_USERNAME: elastic
+      ES_PASSWORD: zaq12wsx
+      COLLECTOR_OTLP_ENABLED: "true"
+      # ===== 让 UI 的 Monitor 页亮起来 =====
+      METRICS_STORAGE_TYPE: prometheus
+      PROMETHEUS_SERVER_URL: http://prometheus:9090
+      PROMETHEUS_QUERY_SUPPORT_SPANMETRICS_CONNECTOR: "true"
+      PROMETHEUS_QUERY_NORMALIZE_CALLS: "true"
+      PROMETHEUS_QUERY_NORMALIZE_DURATION: "true"
+  otel-collector:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/otel-collector:nightly
+    container_name: otel-collector
+    restart: always
+    networks:
+      - middle
+    depends_on:
+      - prometheus
+    command: [ "--config=/etc/otelcol-contrib/otel-collector-config.yml" ]
+    volumes:
+      - ./otel-collector/otel-collector-config.yml:/etc/otelcol-contrib/otel-collector-config.yml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
+  prometheus:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/prometheus:3.4.1
+    hostname: prometheus
+    container_name: prometheus
+    restart: always
+    privileged: true
+    networks:
+      - middle
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ~/usr/local/prometheus/data:/opt/bitnami/prometheus/data
+      - ./prometheus/mac/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+  alertmanager:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/alertmanager:0.28.1
+    hostname: alertmanager
+    container_name: alertmanager
+    restart: always
+    privileged: true
+    networks:
+      - middle
+    ports:
+      - "9094:9094" # Alertmanager Web UI 端口
+    environment:
+      - ALERTMANAGER_CONFIGMAP_ENABLE=true
+      - ALERTMANAGER_CLUSTER_ENABLE=false
+    volumes:
+      - ~/usr/local/alertmanager/data:/opt/bitnami/alertmanager/data
+      - ./alertmanager/alertmanager.yml:/opt/bitnami/alertmanager/conf/alertmanager.yml
+  grafana:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/grafana:12.0.1
+    hostname: grafana
+    container_name: grafana
+    restart: always
+    privileged: true
+    networks:
+      - middle
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - ~/usr/local/grafana/data:/opt/bitnami/grafana/data
+      - ./grafana/grafana-datasources.yaml:/opt/bitnami/grafana/conf/provisioning/datasources/ds.yaml:ro
+      - ./grafana/grafana-dashboards.yaml:/opt/bitnami/grafana/conf/provisioning/dashboards/db.yaml:ro
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-piechart-panel

@@ -1,0 +1,102 @@
+<!DOCTYPE HTML>
+<html xml:lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>My WebSocket</title>
+</head>
+
+<body>
+    <input id="text" type="text" />
+    <button onclick="send()">Send</button>
+    <button onclick="closeWebSocket()">Close</button>
+    <div id="message"></div>
+</body>
+
+<script type="text/javascript">
+
+    let ws = null;
+    //判断当前浏览器是否支持WebSocket
+    if ('WebSocket' in window) {
+        ws = new WebSocket(
+            "ws://127.0.0.1:9000/api/imWs/ws"
+            , ['eyJraWQiOiIzZjRhZDRmZC0xMmZmLTQ5ODktOTdhMC1iZDM2OWZlODFjZGQiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ6ZW5nZGVndWkiLCJjbGllbnRJZCI6MTY4MzAzNzkxNjQ1MzkzMzA1OCwibWFpbCI6Ijg0NTg3NTcyNUBxcS5jb20iLCJuaWNrTmFtZSI6IuabvuW-t-i0te-8iFplbm8pIiwiaXNzIjoiaHR0cDovLzE3Mi4yMC4xMC40OjkwMDIiLCJtb2JpbGUiOiIxODg3MDY2MzkzNyIsImF2YXRhciI6InBpYy91c2VyLzIwMjQwNzI5LzE4MTc5Mjk0MjMwMDk2NTY4MzIucG5nIiwidXNlcklkIjoxNTQzOTYwNTE2MDI2ODIyNjU4LCJhdWQiOiJjYWVjNDM3ZTE5YThkYTlkZTZhMGQzZTVmZDQ1ZTUxMSIsInJlYWxOYW1lIjoic3lzdGVtIiwibmJmIjoxNzMxMjEzOTA0LCJwZXJtaXNzaW9ucyI6WyJyb2xlMjQwODA5MDAwMDAxIiwicm9sZTI0MDgxOTAwMDAwMiIsInJvbGUyNDA4MTkwMDAwMDQiXSwic2NvcGUiOlsicHJvZmlsZSJdLCJhcHBJZCI6MTU0Mzk1MjYzMjE0NDQ3MDAxOCwiZXhwIjoxNzMxMjIxMTA0LCJpYXQiOjE3MzEyMTM5MDQsImp0aSI6IjZlNzA0MDAzLTFiOGYtNDVjNy1hODQ1LTU5Y2ZiNTdjNTNhMyIsImpvYk51bWJlciI6IjIzMDkyMDAwMDAwMSIsInVzZXJuYW1lIjoiemVuZ2RlZ3VpIn0.KywErgxGimLVNLBP9Fll5Av3srnckZGioNXV5snLt9siECpvGyt_pzKYjwL64LC7dE-kk3kbqZHVcfcL9QItyFl9OsbNeH7OYbl4y83mD0hohifOp0Q5C3_4tt4vqeWZLMrAsweNJ7sqIhu2peuqikb1nC28CCeqeJL06cf1Kgw-TL93awXsJEdzwtcKYG7W45WG7YUnc3xxj2ZlUooEbuWEUvkhwgvofxZ0wWQKbUb1U0DQuIuaZX3mGORmTV6Vra4rjX3YwLWaBkPDpzUt65GcFQEGzGT7wu9tkr8wXtUIQfq6Hcg2gugvwkHmaKgjQgth4nwxA0yshq7Xz1KwJA']
+        );
+    }
+    else {
+        alert('当前浏览器 Not support websocket')
+    }
+
+    //连接发生错误的回调方法
+    ws.onerror = function () {
+        setMessageInnerHTML("WebSocket连接发生错误");
+    };
+
+    //连接成功建立的回调方法
+    ws.onopen = function(event) {
+        const obj = {};
+        let message = {};
+
+        console.log(JSON.stringify(event))
+
+        /*
+        obj.command = 'HEARTBEAT';
+        obj.message = "心跳";*/
+
+        /*obj.command = 'SYS_NOTICE_MSG';
+        message.title = '标题';
+        message.msgType = 'TEXT';
+        message.content = '系统通知消息'
+        obj.message = JSON.stringify(message);*/
+
+        obj.command = 'FRIEND_CHAT_MSG';
+        message.receiverId = "1705393523906400258";
+        message.msgType = 'TEXT';
+        message.content = '好友聊天消息'
+        obj.friendChatMsg = JSON.stringify(message);
+
+        /*obj.command = 'GROUP_CHAT_MSG';
+        message.chatGroupId = '1747277321555488769';
+        message.msgType = 'TEXT';
+        message.content = '群聊消息'
+        obj.message = JSON.stringify(message);*/
+
+        /*obj.command = 'OFFLINE_FRIEND_CHAT_MSG';*/
+        //let str = "{\"command\":\"FRIEND_CHAT_MSG\",\"friendChatMsg\":{\"content\":\"好友聊天消息\",\"msgType\":\"TEXT\",\"receiverId\":1705393523906400258}}"
+        //let str = "{\"command\":\"GROUP_CHAT_MSG\",\"groupChatMsg\":{\"content\":\"群聊\",\"msgType\":\"TEXT\",\"chatGroupId\":1771480773303529473}}"
+        //ws.send(str)
+    }
+    //接收到消息的回调方法
+    ws.onmessage = function(message) {
+        console.log("接收消息：" + message.data);
+        if (typeof(message.data) == 'string') {
+            setMessageInnerHTML(message.data);
+        }
+    }
+    //ws连接断开的回调方法
+    ws.onclose = function(e) {
+        console.log("ws连接断开")
+        //console.log(e)
+        setMessageInnerHTML("ws close");
+    }
+
+    //将消息显示在网页上
+    function setMessageInnerHTML(innerHTML) {
+        console.log(innerHTML)
+        document.getElementById('message').innerHTML += '接收的消息:' + innerHTML + '<br/>';
+    }
+
+    //关闭连接
+    function closeWebSocket() {
+        ws.close();
+    }
+
+    //发送消息
+    function send(msg) {
+        if(!msg){
+            msg = document.getElementById('text').value;
+            document.getElementById('message').innerHTML += "发送的消息:" + msg + '<br/>';
+            ws.send(msg);
+        }
+    }
+</script>
+</html>

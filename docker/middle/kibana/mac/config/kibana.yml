@@ -1,0 +1,11 @@
+server.host: "0.0.0.0"
+server.name: kibana
+elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+# 国际化配置中文
+i18n.locale: zh-CN
+# 显示登陆页面
+monitoring.ui.container.elasticsearch.enabled: true
+# 报告权限新行为适配
+xpack.reporting.roles.enabled: false
+#elasticsearch.username: "kibana_system"
+#elasticsearch.password: "ECdwvrmLD%Zg"

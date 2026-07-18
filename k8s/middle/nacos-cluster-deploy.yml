@@ -1,0 +1,233 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    kubernetes.io/metadata.name: nacos-system
+  name: nacos-system
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  name: nacos-iwindplus-com
+  namespace: nacos-system
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: nacos.iwindplus.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: nacos-cluster
+                port:
+                  number: 8848
+            path: /
+            pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - nacos.iwindplus.com
+      secretName: iwindplus-com-cert
+---
+apiVersion: v1
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUdHekNDQlFPZ0F3SUJBZ0lRQ05hSXRwMnB3eE1jK3dFWnpuRjVtekFOQmdrcWhraUc5dzBCQVFzRkFEQmUKTVFzd0NRWURWUVFHRXdKVlV6RVZNQk1HQTFVRUNoTU1SR2xuYVVObGNuUWdTVzVqTVJrd0Z3WURWUVFMRXhCMwpkM2N1WkdsbmFXTmxjblF1WTI5dE1SMHdHd1lEVlFRREV4UlNZWEJwWkZOVFRDQlNVMEVnUTBFZ01qQXhPREFlCkZ3MHlNakV4TURjd01EQXdNREJhRncweU16RXhNRGN5TXpVNU5UbGFNQll4RkRBU0JnTlZCQU1NQ3lvdWVucHoKYVcwdVkyOXRNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTJIMmlXem8zVlgyeApOaGtNUDlReVBLNUFHU2t5NVA0ZDJIb1lJckdxQmVPYXY2NE1IRERrZXk1aDNralorL2YrM3BEd2ViSk1mRWNUCmlYV0Z1eVYvNU1OaHJuK2RwemVKVFN4N2FaRzNjTGUwd3Ntb0dTdEVmVHNHM1JoQXpDb1FJYVdPdi9qWkswRkUKRzdxL3NJcXd0MDRZNUxZczUwVmRrMWpzaFRGZ2dMejc2V2wybldwbjNwWVZCenN1cnpGcnoxcE9LOEM0QTB6eApPR09GajJjaFJjRk5sNmtsUDF6SGNNRDd4bWRhTm9xL2JoS2h3bHVqOStjSS8zTzBmL0FkNDRXa3Y0RXV1ellNCmtkMFdxb0VmZml3Vm5SWGI2RkpLaWFvUnNoeEhxZ0MwMkVjem4vajJucG45SFE3WjMrNkgxWTZJSkRjWHoxaEYKV09mTXVmeXROUUlEQVFBQm80SURHekNDQXhjd0h3WURWUjBqQkJnd0ZvQVVVOG9YV2Z4cndBTWhMeHF1NUtxbwpISUpXMm5Vd0hRWURWUjBPQkJZRUZQMm9hcFk3MU4wYmV3NjU1c014enk5Q0JxY1FNQ0VHQTFVZEVRUWFNQmlDCkN5b3VlbnB6YVcwdVkyOXRnZ2w2ZW5OcGJTNWpiMjB3RGdZRFZSMFBBUUgvQkFRREFnV2dNQjBHQTFVZEpRUVcKTUJRR0NDc0dBUVVGQndNQkJnZ3JCZ0VGQlFjREFqQStCZ05WSFI4RU56QTFNRE9nTWFBdmhpMW9kSFJ3T2k4dgpZMlJ3TG5KaGNHbGtjM05zTG1OdmJTOVNZWEJwWkZOVFRGSlRRVU5CTWpBeE9DNWpjbXd3UGdZRFZSMGdCRGN3Ck5UQXpCZ1puZ1F3QkFnRXdLVEFuQmdnckJnRUZCUWNDQVJZYmFIUjBjRG92TDNkM2R5NWthV2RwWTJWeWRDNWoKYjIwdlExQlRNSFVHQ0NzR0FRVUZCd0VCQkdrd1p6QW1CZ2dyQmdFRkJRY3dBWVlhYUhSMGNEb3ZMM04wWVhSMQpjeTV5WVhCcFpITnpiQzVqYjIwd1BRWUlLd1lCQlFVSE1BS0dNV2gwZEhBNkx5OWpZV05sY25SekxuSmhjR2xrCmMzTnNMbU52YlM5U1lYQnBaRk5UVEZKVFFVTkJNakF4T0M1amNuUXdDUVlEVlIwVEJBSXdBRENDQVg4R0Npc0cKQVFRQjFua0NCQUlFZ2dGdkJJSUJhd0ZwQUhZQTZEN1EyajcxQmpVeTUxY292SWxyeVFQVHk5RVJhK3pyYWVGMwpmVzBHdlc0QUFBR0VVaUZLTkFBQUJBTUFSekJGQWlBM1hxU3U0MmVaN1cvTTk1KzlaWDd3NFE3UlhSeWk2a2VGCmZ4K2FoSlNUcWdJaEFQdnlkdmdvZWZDN2s2VTBaemlUSTFvNUZNRWpYMlMrRERiWjA5OE0zRHU5QUhZQXMzTjMKQitHRVVQaGpodFlGcWR3UkNVcDVMYkZuREF1SDNQQUREbmsycFpvQUFBR0VVaUZLYkFBQUJBTUFSekJGQWlFQQp6UXVBa1F3dUFNZk1QTFg5ZVVMQVc2OXV4a2Y0aDdhczZJdkZhUEFYTHV3Q0lINTdTcDZmd3R4cFJGOWd6RE9ZClFCd2k3TUZFUEdQMGE3a0dlb0pjZEEyU0FIY0F0ejc3Sk4rY1RicDE4am5GdWxqMGJGMzhRczk2bnpYRW5oMEoKZ1NYdHRKa0FBQUdFVWlGSi9BQUFCQU1BU0RCR0FpRUFqS2R2QUFIbzVYUEZGUk04eFZHL1A3MzRWME9Ua2pydgpyZm44WFgyUC84Z0NJUUNQa3ZxNHFpd2tDN0lhNVFzVlJJRFhsNmxwcmVKZSswQitoZFl4c2h4Y3d6QU5CZ2txCmhraUc5dzBCQVFzRkFBT0NBUUVBakJMQit4bzRxdDRNWXpFWkpqakVYR3ZwZWZ4RWExbDZBdDBoQmFTWUVUSlAKb2lJbGhSWFUvbERkMHZZUEV4RlFFbTZGcTVKSjVqOVhsU0JBa2RZcTQ2WngvcUw4bnVoMlIxV2s4azBjTFdCcQpWWUhqbVZONldESGJ4TzREYldSVitaSkFRbitLMVlNL3gxbHBRR0l6aTMwamdTVjVNbTBOemUwMzNzM2c0b2NxClhJRysrTHdsTkdqWENvNW5DbjRtdlJ0c3YveXVXcWlMOWdKSi85MEF5dHlYaVd2bE1sQzh5MWZwWE5mQmlMQTkKMFcxMmVmeHQxWjQ2cGNoQnRkT2VhZWZwb0FWNkUzam5Rb3lOYjlveHp0eFFiTFZkZ0FjZjQvWnVNbkFDQlVQawpZNVk5Q2xWY0NjejMybG1IeVR3NEx5ckFXYVJrQXQydnNQNlE2d2ViWGc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlFc1RDQ0E1bWdBd0lCQWdJUUNLV2lSczFMWEl5RDF3SzB1NnRUU1RBTkJna3Foa2lHOXcwQkFRc0ZBREJoCk1Rc3dDUVlEVlFRR0V3SlZVekVWTUJNR0ExVUVDaE1NUkdsbmFVTmxjblFnU1c1ak1Sa3dGd1lEVlFRTEV4QjMKZDNjdVpHbG5hV05sY25RdVkyOXRNU0F3SGdZRFZRUURFeGRFYVdkcFEyVnlkQ0JIYkc5aVlXd2dVbTl2ZENCRApRVEFlRncweE56RXhNRFl4TWpJek16TmFGdzB5TnpFeE1EWXhNakl6TXpOYU1GNHhDekFKQmdOVkJBWVRBbFZUCk1SVXdFd1lEVlFRS0V3eEVhV2RwUTJWeWRDQkpibU14R1RBWEJnTlZCQXNURUhkM2R5NWthV2RwWTJWeWRDNWoKYjIweEhUQWJCZ05WQkFNVEZGSmhjR2xrVTFOTUlGSlRRU0JEUVNBeU1ERTRNSUlCSWpBTkJna3Foa2lHOXcwQgpBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUE1UzJvaWhFbzlubnBlem96aUR0eDRXV0xMQ2xsL2UwdDFFWWVtRTVuCitNZ1A1dmlhSEx5K1ZwSFArbmRYNUQxOElOSXV1QVY4d0ZxMjZLRjVVMFdOSVppUXA2bUx0SVdqVWVXRFBBMjgKT2V5aFRsajlUTGsyYmV5dGJ0RlU2eXBicFdVbHRtdlk1VjhuZ3NwQzduRlJOQ2pwZm5ERUQya1J5SnpPOHlvSwpNRno0SjRKRThON05BMXVKd1VFRk1VdkhMczBzY0xvUFprS2Nld0lSbTFSVjJBeG1GUXhKa2RmN1lOOVBja2tpCmYyWGdtM2I0OEJabjB6ZjBxWHNTZUd1ODR1YTlnd3pqekk3dGJUQmpheVRwVCsvWHBXdUJWdjZmdmFySTZiaWsKS0I4NTlPU0dRdXc3M1hYZ2V1RndFUEhUSVJvVXRrenUzL0VRK0x0d3pua2tkUUlEQVFBQm80SUJaakNDQVdJdwpIUVlEVlIwT0JCWUVGRlBLRjFuOGE4QURJUzhhcnVTcXFCeUNWdHAxTUI4R0ExVWRJd1FZTUJhQUZBUGVVRFZXCjBVeTdadkNqNGhzYnc1ZXlQZEZWTUE0R0ExVWREd0VCL3dRRUF3SUJoakFkQmdOVkhTVUVGakFVQmdnckJnRUYKQlFjREFRWUlLd1lCQlFVSEF3SXdFZ1lEVlIwVEFRSC9CQWd3QmdFQi93SUJBREEwQmdnckJnRUZCUWNCQVFRbwpNQ1l3SkFZSUt3WUJCUVVITUFHR0dHaDBkSEE2THk5dlkzTndMbVJwWjJsalpYSjBMbU52YlRCQ0JnTlZIUjhFCk96QTVNRGVnTmFBemhqRm9kSFJ3T2k4dlkzSnNNeTVrYVdkcFkyVnlkQzVqYjIwdlJHbG5hVU5sY25SSGJHOWkKWVd4U2IyOTBRMEV1WTNKc01HTUdBMVVkSUFSY01Gb3dOd1lKWUlaSUFZYjliQUVDTUNvd0tBWUlLd1lCQlFVSApBZ0VXSEdoMGRIQnpPaTh2ZDNkM0xtUnBaMmxqWlhKMExtTnZiUzlEVUZNd0N3WUpZSVpJQVliOWJBRUJNQWdHCkJtZUJEQUVDQVRBSUJnWm5nUXdCQWdJd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFINGp4L0xLTlc1WmtsRmMKWVdzOEVqYm0wbnl6S2VaQzJLT1ZZUjdQOGdldkt5c2xXbTRYbzRCU3pLcjIzNUZzSjRhRnQ2eUFpdjFlWTB0WgovWk4xOGJPR1NHU3RvRWMvSkU0b2NJenI4UDVNZzExa1JZSGJtZ1lucjFSeGVraTVtU2ViMzlER3hUcEpENGtHCmhzNWxYTm9vNGNvblVpaUp3S2FxSDd2aDJiYXJ5ZDhwTUlTYWc4M0pVcXlWR2MydFdQcE8wMzI5L0NXcTJrcnkKcXY2Nk9TTWp3dWxVejBkWGY0T0hRYXNSN0NOZklyKzRLU2NjNkFCbFE1UkRGODZQR2VFNmtkd1NRa0ZpQi9jUQp5c055cTBqRURRVGtmYTJwam11V3RNQ05iQm5oRlhCWWVqZnViSWhhVWJFdjJGT1FCM2RDYXYrRlBnNWVFdmVYClRWeU1uR289Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBMkgyaVd6bzNWWDJ4TmhrTVA5UXlQSzVBR1NreTVQNGQySG9ZSXJHcUJlT2F2NjRNCkhERGtleTVoM2tqWisvZiszcER3ZWJKTWZFY1RpWFdGdXlWLzVNTmhybitkcHplSlRTeDdhWkczY0xlMHdzbW8KR1N0RWZUc0czUmhBekNvUUlhV092L2paSzBGRUc3cS9zSXF3dDA0WTVMWXM1MFZkazFqc2hURmdnTHo3NldsMgpuV3BuM3BZVkJ6c3VyekZyejFwT0s4QzRBMHp4T0dPRmoyY2hSY0ZObDZrbFAxekhjTUQ3eG1kYU5vcS9iaEtoCndsdWo5K2NJLzNPMGYvQWQ0NFdrdjRFdXV6WU1rZDBXcW9FZmZpd1ZuUlhiNkZKS2lhb1JzaHhIcWdDMDJFY3oKbi9qMm5wbjlIUTdaMys2SDFZNklKRGNYejFoRldPZk11Znl0TlFJREFRQUJBb0lCQUJvUHljZEVzMXVaMVljSApMZWZUTWpjRzNSV0tWYU9taWM1QktIMm91S2liMVVuRStKVStONHN5c3JweE43aXpDcDRkZ2EyTXp0TlpOUnRqCnAvVTNGdlhocFhVOXpLdFFMcm01SktRNVZBV0FRQVVCQkxqKzhmQkhkbFNRY21DQm9jNkRJVE93RCtpNm95bloKYWZFbFNRL1FHWVFUQUVYWkhtSTZIc01NQml1SkcrSnNnMXhFSkJOcnhLZloyNzlPOTRrcDRGdHQ3dEozMjRFZgpaR2g0Q0ZsSDg0cFVWclEwTUdPSFpIeHF3VnFvRllmNnNoUmphQ0Nyd3UyZ0RObnhpc2QzZDVDWjlSTkJPRVcwCmpPdEZMY2Y0Q2UxNWFVTm56WjVxVUw5NCsvMEsrQytXUEJscHcvS3REdXRYSStFM3FSOWY1cTN3Q1J0dnVOSEYKeWhteVN1TUNnWUVBOS9oYjhFZnNqclJZT1QwWTZwUittOHpabUNPOEhiemFENWRiSHhQeC9uN3pTdkhxU1lTdApiODdBamp2ZFhxTnIyMERLcXVHWW16RVhxd2Q1NVhkRjhNNW5WYTBLSTB6MTRDMnNzb25ZYTZiT3hxdnRkMGhlCmk3MlhjUWR2S2dvN00yMStiUG5YODB2dElLTWU1ZEx6VWFGeVhEbzV1NkpPZ3ZKNVU1bFBPWXNDZ1lFQTM0QlEKbmszWm1jYUVaZit3YXhvQ2wycDRPYVhCWk83K3UrUjJxSVRTSHo3ckRxa1BKbmptVXFEMFJvdHNhZUthd1pYRgo3U1FMS29VcndwUDBlTVZCME1SaEdqcGdKWStRdmN0TWhRa3Q5eTdFLy9xYS9ndTZCT2tkdEErMlhWNGhVNVVNCjliWFNjYmF1TEJ1QzJ2a09pakhPTW1CZXRBT2JlZFIxdHBYQkREOENnWUE4cHZUbCt0R3p2Z3p1UXpGNi8wTlEKbkhTRXNBanRSU29aTWk1SmxibFZSSHdCMHRZNWtVaFMxc0ZtaU9JR3FmWlJ0TEZkeHJ4ckNVRCt4bDljYnlZZQpWbjRVQ0xVNEdUVHkxbmt0V21ZalByUEpDSGlXK282Vm81UU5RNEkvU0MxZTBPTmhpR0wzMFpSNHJTMTdqWE9TCmZlalpBaXpvNWpSSjkwRVIzNmZ2TFFLQmdRQ08wZmt5WDc4WWhBSGhDQllkS3A3VFVVY0lWNEtRMUNSVnZ2V1EKVkdmTmJiQlpTdkVTZlpsNDNiK2JRTWNEbHJtYjBQQ016RWFTWWswSFp2S0hKazRiY1JJMzUydS9OTkdpWnNJOApGUlNaYXZxYU5QTk1PZ1FoMVRHVSthRm9ZcGxiUnRqa1BzNyt1V1R0YkpzZkFKNG84eEMzb2x1Q0h2Z0FUeUwxCmpSYXlrd0tCZ1FDcjJXbUhzcW1HSGFWdVk0dXZ1V1FPZlBEN2laTUh3ZkFhbDZNME9KZlowSlNyOWtJWFh3cTEKRTR0RDhsTXgyTFc3MVg5aTJqSCtPbTl1WktLZ3BCSjU2cVhmZktwbVgzQmZUK2gwS0IrdVhuS0hkN0pRRWZqbQpuU01mK3F4ZTFub3JVRVlFL0dCOXNQMG5raXBZSGxGWk55ak1vdkpyby9ZZFFMbkVhN050Q3c9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+kind: Secret
+metadata:
+  name: iwindplus-com-cert
+  namespace: nacos-system
+type: kubernetes.io/tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nacos
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  name: nacos-cluster
+  namespace: nacos-system
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 8848
+      name: server
+      targetPort: 8848
+    - port: 9848
+      name: client-rpc
+      targetPort: 9848
+    - port: 9849
+      name: raft-rpc
+      targetPort: 9849
+    - port: 7848
+      name: old-raft-rpc
+      targetPort: 7848
+  selector:
+    app: nacos
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: nacos
+  name: nacos-server
+  namespace: nacos-system
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: nacos
+  serviceName: nacos-cluster
+  template:
+    metadata:
+      labels:
+        app: nacos
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - nacos
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      restartPolicy: Always
+      initContainers:
+        - name: peer-finder-plugin-install
+          image: nacos/nacos-peer-finder-plugin:1.1
+          imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /home/nacos/plugins/peer-finder
+              name: data
+              subPath: peer-finder
+      containers:
+        - env:
+          - name: TZ
+            value: Asia/Shanghai
+          - name: MYSQL_SERVICE_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: mysql.host
+          - name: MYSQL_SERVICE_DB_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: mysql.db.name
+          - name: MYSQL_SERVICE_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: mysql.port
+          - name: MYSQL_SERVICE_USER
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: mysql.user
+          - name: MYSQL_SERVICE_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: mysql.password
+          - name: MODE
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: nacos.server.mode
+          - name: NACOS_REPLICAS
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: nacos.server.replicas
+          - name: NACOS_SERVER_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: nacos.server.port
+          - name: PREFER_HOST_MODE
+            value: "hostname"
+          - name: NACOS_SERVERS
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: nacos.server.list
+          - name: JAVA_OPTS
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: nacos.server.javaOpts
+          image: nacos/nacos-server:v2.1.2
+          imagePullPolicy: IfNotPresent
+          name: nacos
+          ports:
+            - containerPort: 8848
+              name: client
+            - containerPort: 9848
+              name: client-rpc
+            - containerPort: 9849
+              name: raft-rpc
+            - containerPort: 7848
+              name: old-raft-rpc
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: "500m"
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /home/nacos/plugins/peer-finder
+              subPath: peer-finder
+            - name: data
+              mountPath: /home/nacos/data
+              subPath: data
+            - name: data
+              mountPath: /home/nacos/logs
+              subPath: logs
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+        namespace: nacos-system
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Gi
+        storageClassName: alicloud-nas-extreme-02f105aa
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nacos-config
+  namespace: nacos-system
+data:
+  mysql.host: "mysql-master.mysql-system"
+  mysql.db.name: "nacos"
+  mysql.port: "3306"
+  mysql.user: "nacos"
+  mysql.password: "iwindplus123456@"
+  nacos.server.mode: "cluster"
+  nacos.server.replicas: "3"
+  nacos.server.port: "8848"
+  nacos.server.list: "nacos-server-0.nacos-cluster.nacos-system.svc.cluster.local:8848 nacos-server-1.nacos-cluster.nacos-system.svc.cluster.local:8848 nacos-server-2.nacos-cluster.nacos-system.svc.cluster.local:8848"
+  nacos.server.javaOpts: "-Xmx1g -Xms1g"

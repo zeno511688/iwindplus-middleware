@@ -1,0 +1,28 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: alicloud-nas-extreme-02f105aa
+mountOptions:
+  - nolock,tcp,noresvport
+  - vers=3
+parameters:
+  volumeAs: subpath
+  server: "02f105aa-gxc5.cn-shenzhen.extreme.nas.aliyuncs.com:/share"
+provisioner: nasplugin.csi.alibabacloud.com
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: alicloud-nas-259a44a286
+mountOptions:
+  - nolock,tcp,noresvport
+  - vers=3
+parameters:
+  volumeAs: subpath
+  server: "259a44a286-ogo88.cn-shenzhen.nas.aliyuncs.com:/"
+provisioner: nasplugin.csi.alibabacloud.com
+reclaimPolicy: Retain
+allowVolumeExpansion: true

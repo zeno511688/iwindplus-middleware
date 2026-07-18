@@ -1,0 +1,51 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: [ 'alertmanager:9093' ]
+rule_files:
+# - "first_rules.yml"
+# - "second_rules.yml"
+
+scrape_configs:
+  - job_name: 'otel'
+    static_configs:
+      - targets: [ 'otel-collector:8889' ]
+  - job_name: "rabbitmq"
+    metrics_path: '/minio/prometheus/metrics'
+    static_configs:
+      - targets: [ "rabbitmq:9010" ]
+  - job_name: "minio"
+    metrics_path: '/minio/prometheus/metrics'
+    static_configs:
+      - targets: [ "minio:9010" ]
+  - job_name: "iwindplus-gateway"
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ "host.docker.internal:9000" ]
+  - job_name: "iwindplus-mgt"
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ "host.docker.internal:9001" ]
+  - job_name: "iwindplus-auth"
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ "host.docker.internal:9002" ]
+  - job_name: "iwindplus-log"
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ "host.docker.internal:9003" ]
+  - job_name: "iwindplus-im"
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ "host.docker.internal:9004" ]
+  - job_name: "iwindplus-monitor"
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ "host.docker.internal:9005" ]
+  - job_name: "iwindplus-setup"
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ "host.docker.internal:9006" ]

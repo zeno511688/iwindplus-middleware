@@ -1,0 +1,28 @@
+version: "3.8"
+networks:
+  app:
+    external: true
+    name: iwindplus-app
+services:
+  nginx:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/nginx:1.23.1
+    hostname: nginx
+    container_name: nginx
+    restart: always
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - app
+    volumes:
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+      - ./cert:/etc/nginx/cert
+      - ./etc/nginx.conf:/etc/nginx/nginx.conf
+      - ./etc/conf.d:/etc/nginx/conf.d
+      - ./html:/usr/share/nginx/html

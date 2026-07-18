@@ -1,0 +1,142 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mongo-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mongo-default-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: mongo-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-cluster
+  namespace: mongo-system
+  labels:
+    name: mongo
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 27017
+      name: server
+      targetPort: 27017
+  selector:
+    app: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-cs
+  namespace: mongo-system
+  labels:
+    name: mongo
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+      nodePort: 30717
+  selector:
+    app: mongo
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: mongo
+  name: mongo-server
+  namespace: mongo-system
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+      role: mongo
+  serviceName: mongo-cluster
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: mongo
+        role: mongo
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - mongo
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      terminationGracePeriodSeconds: 10
+      containers:
+        - env:
+          - name: TZ
+            value: Asia/Shanghai
+          - name: MONGO_INITDB_ROOT_USERNAME
+            value: admin
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            value: zaq12wsx
+          name: mongo
+          image: mongo:5.0.9
+          command:
+            - mongod
+            - "--replSet"
+            - rs0
+            - "--bind_ip"
+            - 0.0.0.0
+          ports:
+            - containerPort: 27017
+              name: server
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: "200m"
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+        - name: mongo-sidecar
+          image: cvallance/mongo-k8s-sidecar:latest
+          env:
+            - name: KUBE_NAMESPACE
+              value: mongo-system
+            - name: KUBERNETES_MONGO_SERVICE_NAME
+              value: mongo-cluster
+            - name: MONGODB_USERNAME
+              value: admin
+            - name: MONGODB_PASSWORD
+              value: zaq12wsx
+            - name: MONGODB_DATABASE
+              value: admin
+            - name: MONGO_SIDECAR_POD_LABELS
+              value: "app=mongo,role=mongo"
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+        namespace: mongo-system
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 500Gi
+        storageClassName: alicloud-nas-extreme-02f105aa

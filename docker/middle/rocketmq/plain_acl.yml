@@ -1,0 +1,38 @@
+globalWhiteRemoteAddresses:
+  - "0.0.0.0"
+
+accounts:
+
+  # ========================
+  # 管理员（Dashboard / 运维）
+  # ========================
+  - accessKey: "admin"
+    secretKey: "admin"
+    whiteRemoteAddress: "0.0.0.0"
+    admin: true
+    defaultTopicPerm: PUB|SUB
+    defaultGroupPerm: PUB|SUB
+
+  # ========================
+  # 生产者
+  # ========================
+  - accessKey: "producer"
+    secretKey: "prod123"
+    whiteRemoteAddress: "0.0.0.0"
+    admin: false
+    topicPerms:
+      - topic_test=PUB
+    groupPerms:
+      - group_test=PUB
+
+  # ========================
+  # 消费者
+  # ========================
+  - accessKey: "consumer"
+    secretKey: "cons123"
+    whiteRemoteAddress: "0.0.0.0"
+    admin: false
+    topicPerms:
+      - topic_test=SUB
+    groupPerms:
+      - group_test=SUB

@@ -1,0 +1,114 @@
+service:
+  vgroupMapping:
+    iwindplus_tx_group: default
+  default:
+    grouplist: 127.0.0.1:8091
+  enableDegrade: false
+  disableGlobalTransaction: false
+store:
+  mode: db
+  lock:
+    mode: db
+  session:
+    mode: db
+  publicKey:
+  db:
+    datasource: druid
+    dbType: mysql
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3317/seata?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8
+    user: root
+    password: njX@D*4ETsm3
+    minConn: 5
+    maxCon: 30
+    globalTable: global_table
+    branchTable: branch_table
+    distributedLockTable: distributed_lock
+    queryLimit: 100
+    lockTable: lock_table
+    maxWait: 5000
+transport:
+  type: TCP
+  server: NIO
+  heartbeat: true
+  enableTmClientBatchSendRequest: false
+  enableRmClientBatchSendRequest: true
+  enableTcServerBatchSendResponse: false
+  rpcRmRequestTimeout: 30000
+  rpcTmRequestTimeout: 30000
+  rpcTcRequestTimeout: 30000
+  threadFactory:
+    bossThreadPrefix: NettyBoss
+    workerThreadPrefix: NettyServerNIOWorker
+    serverExecutorThreadPrefix: NettyServerBizHandler
+    shareBossWorker: false
+    clientSelectorThreadPrefix: NettyClientSelector
+    clientSelectorThreadSize: 1
+    clientWorkerThreadPrefix: NettyClientWorkerThread
+    bossThreadSize: 1
+    workerThreadSize: default
+  shutdown:
+    wait: 3
+  serialization: seata
+  compressor: none
+client:
+  rm:
+    asyncCommitBufferLimit: 10000
+    lock:
+      retryInterval: 10
+      retryTimes: 30
+      retryPolicyBranchRollbackOnConflict: true
+    reportRetryCount: 5
+    tableMetaCheckEnable: true
+    tableMetaCheckerInterval: 60000
+    sqlParserType: druid
+    reportSuccessEnable: false
+    sagaBranchRegisterEnable: false
+    sagaJsonParser: fastjson
+    tccActionInterceptorOrder: -2147482648
+  tm:
+    commitRetryCount: 5
+    rollbackRetryCount: 5
+    defaultGlobalTransactionTimeout: 60000
+    degradeCheck: false
+    degradeCheckAllowTimes: 10
+    degradeCheckPeriod: 2000
+    interceptorOrder: -2147482648
+  undo:
+    dataValidation: true
+    logSerialization: jackson
+    onlyCareUpdateColumns: true
+    logTable: undo_log
+    compress:
+      enable: true
+      type: zip
+      threshold: 64k
+server:
+  service-port: 8091
+  undo:
+    logSaveDays: 7
+    logDeletePeriod: 86400000
+  recovery:
+    committingRetryPeriod: 1000
+    asynCommittingRetryPeriod: 1000
+    rollbackingRetryPeriod: 1000
+    timeoutRetryPeriod: 1000
+  maxCommitRetryTimeout: -1
+  maxRollbackRetryTimeout: -1
+  rollbackRetryTimeoutUnlockEnable: false
+  distributedLockExpireTime: 10000
+  xaerNotaRetryTimeout: 60000
+  session.branchAsyncQueueSize: 5000
+  session.enableBranchAsyncRemove: false
+  enableParallelRequestHandle: false
+tcc:
+  fence:
+    logTableName: tcc_fence_log
+    cleanPeriod: 1h
+log:
+  exceptionRate: 100
+metrics:
+  enabled: false
+  registryType: compact
+  exporterList: prometheus
+  exporterPrometheusPort: 9898

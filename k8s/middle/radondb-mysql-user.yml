@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  # Corresponding to the user's secretName
+  name: mysql-user-password
+  namespace: mysql-system
+data:
+  # The key corresponding to the user's secretKey
+  # RadonDB@123
+  superUser: enpzaW1AMjAxOQ==
+  normalUser: UmFkb25EQkAxMjM=
+---
+apiVersion: mysql.radondb.com/v1alpha1
+kind: MysqlUser
+metadata:
+  name: super-user
+  namespace: mysql-system
+spec:
+  ## MySQL user name.
+  user: super_user
+  withGrantOption: true
+  tlsOptions:
+    type: NONE
+  hosts:
+    - "%"
+  permissions:
+    - database: "*"
+      tables:
+        - "*"
+      privileges:
+        - ALL
+  ## Specify the cluster where the user is located.
+  userOwner:
+    clusterName: mysql-server
+    nameSpace: mysql-system
+  ## Specify the secret object for user.
+  secretSelector:
+    secretName: mysql-user-password
+    secretKey: superUser
+---
+apiVersion: mysql.radondb.com/v1alpha1
+kind: MysqlUser
+metadata:
+  name: normal-user
+  namespace: mysql-system
+spec:
+  ## MySQL user name.
+  user: normal_user
+  withGrantOption: false
+  tlsOptions:
+    type: NONE
+  hosts:
+    - "%"
+  permissions:
+    - database: "*"
+      tables:
+        - "*"
+      privileges:
+        - USAGE
+  ## Specify the cluster where the user is located.
+  userOwner:
+    clusterName: mysql-server
+    nameSpace: mysql-system
+  ## Specify the secret object for user.
+  secretSelector:
+    secretName: mysql-user-password
+    secretKey: normalUser
