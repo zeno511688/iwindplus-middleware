@@ -217,7 +217,7 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
       # broker.id，必须唯一，且与KAFKA_CFG_NODE_ID一致
       - KAFKA_BROKER_ID=1
-      - JAVA_OPTS=-Xmx512m -Xms512m
+      - KAFKA_CFG_NUM_PARTITIONS=6
     volumes:
       - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
       - D:/usr/local/kafka/data:/bitnami/kafka/data
