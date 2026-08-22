@@ -436,7 +436,7 @@ services:
     depends_on:
       - mariadb
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://mariadb:3317/xxl_job?Unicode=true&characterEncoding=UTF-8&useSSL=false"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mariadb:3317/xxl_job?useUnicode=true&autoReconnect=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2B8"
       SPRING_DATASOURCE_USERNAME: "root"
       SPRING_DATASOURCE_PASSWORD: "njX@D*4ETsm3"
       XXL_JOB_ACCESSTOKEN: c61909bdde7b5cbeb27adeeff43ac55c
@@ -560,3 +560,19 @@ services:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-piechart-panel
+  vault:
+    image: registry.cn-shenzhen.aliyuncs.com/iwindplus/hashicorp-vault:2.0
+    hostname: vault
+    container_name: vault
+    restart: always
+    privileged: true
+    networks:
+      - middle
+    ports:
+      - "18200:8200"
+    volumes:
+      - ~/usr/local/vault/data:/vault/data
+      - ./vault/vault.hcl:/vault/config/vault.hcl:ro
+    environment:
+      VAULT_ADDR: "http://0.0.0.0:8200"
+    command: vault server -config=/vault/config/vault.hcl
